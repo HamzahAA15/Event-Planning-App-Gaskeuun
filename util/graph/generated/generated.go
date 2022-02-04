@@ -86,6 +86,7 @@ type ComplexityRoot struct {
 		GetComment      func(childComplexity int, commentID int) int
 		GetComments     func(childComplexity int, eventID int) int
 		GetEvent        func(childComplexity int, eventID int) int
+		GetEventParam   func(childComplexity int, param *string) int
 		GetEvents       func(childComplexity int) int
 		GetParticipants func(childComplexity int, eventID int) int
 		GetUser         func(childComplexity int, userID int) int
@@ -129,6 +130,7 @@ type QueryResolver interface {
 	GetComment(ctx context.Context, commentID int) (*model.Comment, error)
 	GetEvents(ctx context.Context) ([]*model.Event, error)
 	GetEvent(ctx context.Context, eventID int) (*model.Event, error)
+	GetEventParam(ctx context.Context, param *string) ([]*model.Event, error)
 }
 
 type executableSchema struct {
@@ -421,6 +423,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetEvent(childComplexity, args["eventId"].(int)), true
 
+	case "Query.getEventParam":
+		if e.complexity.Query.GetEventParam == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getEventParam_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetEventParam(childComplexity, args["param"].(*string)), true
+
 	case "Query.getEvents":
 		if e.complexity.Query.GetEvents == nil {
 			break
@@ -635,6 +649,7 @@ type Query {
   getComment(commentId: Int!): Comment!
   getEvents: [Event!]
   getEvent(eventId: Int!): Event!
+  getEventParam(param: String): [Event!]
 }
 
 input NewUser {
@@ -930,6 +945,21 @@ func (ec *executionContext) field_Query_getComments_args(ctx context.Context, ra
 		}
 	}
 	args["eventId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getEventParam_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["param"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("param"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["param"] = arg0
 	return args, nil
 }
 
@@ -2354,6 +2384,45 @@ func (ec *executionContext) _Query_getEvent(ctx context.Context, field graphql.C
 	res := resTmp.(*model.Event)
 	fc.Result = res
 	return ec.marshalNEvent2ᚖsircloᚋentitiesᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getEventParam(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getEventParam_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetEventParam(rctx, args["param"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖsircloᚋentitiesᚋmodelᚐEventᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4567,6 +4636,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getEventParam":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getEventParam(ctx, field)
 				return res
 			}
 

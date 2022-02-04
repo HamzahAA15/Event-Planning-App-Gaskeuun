@@ -375,6 +375,10 @@ func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event
 	return &modelData, nil
 }
 
+func (r *queryResolver) GetEventParam(ctx context.Context, param *string) ([]*model.Event, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

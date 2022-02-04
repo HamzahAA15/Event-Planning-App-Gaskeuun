@@ -47,8 +47,9 @@ type Query {
   getParticipants(eventId: Int!): [User!]
   getComments(eventId: Int!): [Comment!]
   getComment(commentId: Int!): Comment!
-  getEvents: [Event!] #done
-  getEvent(eventId: Int!): Event!#done
+  getEvents: [Event!]
+  getEvent(eventId: Int!): Event!
+  getEventParam(param: String): [Event!]
 }
 
 input NewUser {

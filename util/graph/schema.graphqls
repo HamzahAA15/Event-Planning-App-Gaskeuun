@@ -25,7 +25,8 @@ type LoginResponse {
 type Comment {
   id: Int!
   comment: String!
-  user: User
+  user: User!
+  updated_at: String!
 }
 
 type Event {
@@ -90,7 +91,11 @@ type Mutation {
   createParticipant(eventId: Int!): SuccessResponse!
   deleteParticipant(eventId: Int!): SuccessResponse!
   createComment(eventId: Int!, comment: String!): SuccessResponse!
-  editComment(commentId: Int!, eventId: Int!, comment: String!): SuccessResponse!
+  editComment(
+    commentId: Int!
+    eventId: Int!
+    comment: String!
+  ): SuccessResponse!
   deleteComment(commentId: Int!, eventId: Int!): SuccessResponse!
   createUser(input: NewUser!): SuccessResponse!
   deleteUser: SuccessResponse!

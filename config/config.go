@@ -40,6 +40,6 @@ func initConfig() *AppConfig {
 	defaultConfig.Database.Address = "localhost" //172.17.0.1
 	defaultConfig.Database.Port = 3306
 	defaultConfig.Database.Username = "root"
-	defaultConfig.Database.Password = "asdf1234"
+	defaultConfig.Database.Password = "ikanlouhan"
 	return &defaultConfig
 }

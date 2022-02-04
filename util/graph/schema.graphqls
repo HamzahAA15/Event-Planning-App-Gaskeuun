@@ -1,0 +1,101 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type SuccessResponse {
+  code: Int!
+  message: String!
+}
+
+type User {
+  id: Int
+  name: String!
+  email: String!
+  password: String!
+  image: String
+}
+
+type LoginResponse {
+  code: Int!
+  message: String!
+  token: String!
+  User: User!
+}
+
+type Comment {
+  id: Int!
+  comment: String!
+  user: User
+}
+
+type Event {
+  id: Int
+  userId: Int!
+  categoryId: Int!
+  title: String!
+  host: String!
+  date: String!
+  location: String!
+  description: String!
+  imageUrl: String
+}
+
+type Query {
+  login(email: String!, password: String!): LoginResponse!
+  getUsers: [User!]
+  getUser(userId: Int!): User!
+  getParticipants(eventId: Int!): [User!]
+  getComments(eventId: Int!): [Comment!]
+  getComment(commentId: Int!): Comment!
+  getEvents: [Event!] #done
+  getEvent(eventId: Int!): Event!#done
+}
+
+input NewUser {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input EditUser {
+  name: String
+  email: String
+  password: String
+  image: String
+}
+
+input NewEvent {
+  userId: Int!
+  categoryId: Int!
+  title: String!
+  host: String!
+  date: String!
+  location: String!
+  description: String!
+  imageUrl: String
+}
+
+input EditEvent {
+  categoryId: Int
+  title: String
+  host: String
+  date: String
+  location: String
+  description: String
+  imageUrl: String
+}
+
+type Mutation {
+  createParticipant(eventId: Int!): SuccessResponse!
+  deleteParticipant(eventId: Int!): SuccessResponse!
+  createComment(eventId: Int!, comment: String!): SuccessResponse!
+  editComment(commentId: Int!, eventId: Int!, comment: String!): SuccessResponse!
+  deleteComment(commentId: Int!, eventId: Int!): SuccessResponse!
+  createUser(input: NewUser!): SuccessResponse!
+  deleteUser: SuccessResponse!
+  editUser(edit: EditUser!): SuccessResponse!
+  createEvent(input: NewEvent!): SuccessResponse!
+  updateEvent(eventId: Int!, edit: EditEvent!): SuccessResponse!
+  deleteEvent(eventId: Int!): SuccessResponse!
+}
+scalar Time

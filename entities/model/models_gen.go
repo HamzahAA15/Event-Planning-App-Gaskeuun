@@ -3,9 +3,10 @@
 package model
 
 type Comment struct {
-	ID      int    `json:"id"`
-	Comment string `json:"comment"`
-	User    *User  `json:"user"`
+	ID        int    `json:"id"`
+	Comment   string `json:"comment"`
+	User      *User  `json:"user"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 type EditEvent struct {

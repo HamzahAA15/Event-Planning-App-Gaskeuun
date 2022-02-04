@@ -2,6 +2,7 @@ package event
 
 import (
 	"database/sql"
+	"fmt"
 	"sirclo/entities"
 )
 
@@ -45,6 +46,26 @@ func (er *EventRepository) GetEvent(eventID int) (entities.Event, error) {
 	return event, nil
 }
 
+func (er *EventRepository) GetEventParam(param string) ([]entities.EventCat, error) {
+	var events []entities.EventCat
+	convParam := "%" + param + "%"
+	result, err := er.db.Query(`SELECT e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, c.id as category_id, c.category FROM events e JOIN categories c ON e.category_id = c.id WHERE e.title LIKE ? OR e.location LIKE ? OR c.category LIKE ? AND deleted_at IS NULL`, convParam, convParam, convParam)
+	if err != nil {
+		return nil, err
+	}
+
+	for result.Next() {
+		var event entities.EventCat
+		err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl, &event.Categories.Id, &event.Categories.Category)
+
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
 func (er *EventRepository) CreateEvent(event entities.Event) (entities.Event, error) {
 	query := `INSERT INTO events (user_id, category_id, title, host, date, location, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -61,31 +82,39 @@ func (er *EventRepository) CreateEvent(event entities.Event) (entities.Event, er
 }
 
 func (er *EventRepository) UpdateEvent(event entities.Event) (entities.Event, error) {
-	query := `UPDATE events SET category_id = ?, title = ?, host = ?, date = ?, location = ?, description = ?, image_url = ?, updated_at = now() WHERE id = ?`
+	query := `UPDATE events SET category_id = ?, title = ?, host = ?, date = ?, location = ?, description = ?, image_url = ?, updated_at = now() WHERE id = ? AND user_id = ?`
 
 	statement, err := er.db.Prepare(query)
 	if err != nil {
 		return event, err
 	}
 
-	_, err = statement.Exec(event.CategoryId, event.Title, event.Host, event.Date, event.Location, event.Description, event.ImageUrl, event.Id)
-	if err != nil {
-		return event, err
+	result, err_ex := statement.Exec(event.CategoryId, event.Title, event.Host, event.Date, event.Location, event.Description, event.ImageUrl, event.Id, event.UserID)
+	if err_ex != nil {
+		return event, err_ex
+	}
+	mengubah, _ := result.RowsAffected()
+	if mengubah == 0 {
+		return event, fmt.Errorf("event not found")
 	}
 	return event, nil
 }
 
-func (er *EventRepository) DeleteEvent(event entities.Event) (entities.Event, error) {
-	query := `Update events SET deleted_at = now() WHERE id = ?`
+func (er *EventRepository) DeleteEvent(event entities.Event, loginId int) (entities.Event, error) {
+	query := `Update events SET deleted_at = now() WHERE id = ? AND user_id = ?`
 
 	statement, err := er.db.Prepare(query)
 	if err != nil {
 		return event, err
 	}
-
-	_, err = statement.Exec(event.Id)
-	if err != nil {
-		return event, err
+	fmt.Println("ini ei & li: ", event.Id, loginId)
+	result, err_exec := statement.Exec(event.Id, loginId)
+	if err_exec != nil {
+		return event, err_exec
+	}
+	mengubah, _ := result.RowsAffected()
+	if mengubah == 0 {
+		return event, fmt.Errorf("event not found")
 	}
 
 	return event, nil

@@ -164,8 +164,13 @@ func (r *mutationResolver) EditUser(ctx context.Context, edit model.EditUser) (*
 }
 
 func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*model.SuccessResponse, error) {
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginID := dataLogin.(int)
 	var event entities.Event
-	event.UserID = input.UserID
+	event.UserID = loginID
 	event.CategoryId = input.CategoryID
 	event.Title = input.Title
 	event.Host = input.Host
@@ -187,10 +192,16 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 }
 
 func (r *mutationResolver) UpdateEvent(ctx context.Context, eventID int, edit model.EditEvent) (*model.SuccessResponse, error) {
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	userID := dataLogin.(int)
 	event, err := r.eventRepo.GetEvent(eventID)
 	if err != nil {
 		return nil, err
 	}
+	event.UserID = userID
 	event.CategoryId = *edit.CategoryID
 	event.Title = *edit.Title
 	event.Host = *edit.Host
@@ -212,12 +223,17 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, eventID int, edit mo
 }
 
 func (r *mutationResolver) DeleteEvent(ctx context.Context, eventID int) (*model.SuccessResponse, error) {
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginId := dataLogin.(int)
 	event, err := r.eventRepo.GetEvent(eventID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = r.eventRepo.DeleteEvent(event)
+	_, err = r.eventRepo.DeleteEvent(event, loginId)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +392,17 @@ func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event
 }
 
 func (r *queryResolver) GetEventParam(ctx context.Context, param *string) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	responseData, err := r.eventRepo.GetEventParam(*param)
+	if err != nil {
+		return nil, err
+	}
+	eventResponseData := []*model.Event{}
+
+	for _, val := range responseData {
+		eventResponseData = append(eventResponseData, &model.Event{ID: &val.Id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+	}
+
+	return eventResponseData, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

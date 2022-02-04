@@ -11,3 +11,13 @@ type Event struct {
 	Description string `json:"description" form:"description"`
 	ImageUrl    string `json:"imageurl" form:"imageurl"`
 }
+
+type Categories struct {
+	Id       int    `json:"id" form:"id"`
+	Category string `json:"category" form:"category"`
+}
+
+type EventCat struct {
+	Event
+	Categories Categories
+}

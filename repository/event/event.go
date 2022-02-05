@@ -16,7 +16,7 @@ func New(db *sql.DB) *EventRepository {
 
 func (er *EventRepository) GetEvents() ([]entities.Event, error) {
 	var events []entities.Event
-	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url, created_at from events WHERE deleted_at IS NULL`)
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE deleted_at IS NULL`)
 	if err != nil {
 		return nil, err
 	}

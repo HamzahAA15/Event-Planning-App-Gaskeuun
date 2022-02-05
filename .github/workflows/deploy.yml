@@ -1,0 +1,22 @@
+name: Deploy to EC2
+on:
+  push:
+    branches:
+      - main
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to EC2 using SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd "Event-Planning-App-Gaskeuun"
+          git pull origin main
+          docker-compose down && docker-compose up --build -d

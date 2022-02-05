@@ -1,0 +1,30 @@
+services:
+
+  appDb:
+    image: bitnami/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: graphql_group_project
+    ports: 
+      - 3306:3306
+    volumes:
+      - 'mysql_data:/bitnami/mysql/data'
+
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root",  "-ptoor", "-e", "show schemas"]
+      interval: 10s 
+
+  app:
+    build: .
+    restart: always
+    depends_on:
+      appDb:
+        condition: service_healthy
+
+    ports:
+      - 8080:8080
+
+volumes:
+  mysql_data:
+    driver: local

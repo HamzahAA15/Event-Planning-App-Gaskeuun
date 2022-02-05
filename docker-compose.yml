@@ -18,6 +18,9 @@ services:
   app:
     build: .
     restart: always
+    depends_on:
+      appDb:
+        condition: service_healthy
     environment:
       HTTP_PORT: 8080
       STORAGE: db

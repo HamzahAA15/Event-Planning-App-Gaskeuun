@@ -21,9 +21,7 @@ services:
     depends_on:
       appDb:
         condition: service_healthy
-    environment:
-      HTTP_PORT: 8080
-      STORAGE: db
+
     ports:
       - 8080:8080
 

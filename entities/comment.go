@@ -9,8 +9,9 @@ type Comment struct {
 }
 
 type CommentResponse struct {
-	Id      int    `json:"id" form:"id"`
-	EventId int    `json:"event_id" form:"event_id"`
-	User    User   `json:"user" form:"user"`
-	Comment string `json:"comment" form:"comment"`
+	Id        int    `json:"id" form:"id"`
+	EventId   int    `json:"event_id" form:"event_id"`
+	User      User   `json:"user" form:"user"`
+	Comment   string `json:"comment" form:"comment"`
+	UpdatedAt string `json:"updated_at" form:"updated_at"`
 }

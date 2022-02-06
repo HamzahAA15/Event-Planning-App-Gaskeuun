@@ -17,7 +17,7 @@ func New(db *sql.DB) *CommentRepository {
 func (cr *CommentRepository) GetComments(eventId int) ([]entities.CommentResponse, error) {
 	var comments []entities.CommentResponse
 	result, err := cr.db.Query(`
-	select comments.id, users.id, users.name, users.email, users.image_url, comments.comment from users
+	select comments.id, users.id, users.name, users.email, users.image_url, comments.comment, comments.updated_at from users
 	JOIN comments ON users.Id = comments.user_id
 	where comments.deleted_at is null AND users.deleted_at is null AND comments.event_id = ?`, eventId)
 	if err != nil {
@@ -26,7 +26,7 @@ func (cr *CommentRepository) GetComments(eventId int) ([]entities.CommentRespons
 	defer result.Close()
 	for result.Next() {
 		var comment entities.CommentResponse
-		err := result.Scan(&comment.Id, &comment.User.Id, &comment.User.Name, &comment.User.Email, &comment.User.ImageUrl, &comment.Comment)
+		err := result.Scan(&comment.Id, &comment.User.Id, &comment.User.Name, &comment.User.Email, &comment.User.ImageUrl, &comment.Comment, &comment.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("comment not found")
 		}
@@ -38,7 +38,7 @@ func (cr *CommentRepository) GetComments(eventId int) ([]entities.CommentRespons
 func (cr *CommentRepository) GetComment(commentId int) (entities.CommentResponse, error) {
 	var comment entities.CommentResponse
 	result, err := cr.db.Query(`
-	select comments.id, users.id, users.name, users.email, users.image_url, comments.comment from users
+	select comments.id, users.id, users.name, users.email, users.image_url, comments.comment, comments.updated_at from users
 	JOIN comments ON users.Id = comments.user_id
 	where comments.deleted_at is null AND users.deleted_at is null AND comments.id = ?`, commentId)
 	if err != nil {
@@ -46,7 +46,7 @@ func (cr *CommentRepository) GetComment(commentId int) (entities.CommentResponse
 	}
 	defer result.Close()
 	for result.Next() {
-		err := result.Scan(&comment.Id, &comment.User.Id, &comment.User.Name, &comment.User.Email, &comment.User.ImageUrl, &comment.Comment)
+		err := result.Scan(&comment.Id, &comment.User.Id, &comment.User.Name, &comment.User.Email, &comment.User.ImageUrl, &comment.Comment, &comment.UpdatedAt)
 		if err != nil {
 			return comment, fmt.Errorf("comment not found")
 		}

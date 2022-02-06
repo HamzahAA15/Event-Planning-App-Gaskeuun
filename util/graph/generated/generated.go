@@ -165,7 +165,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Comment.ID(childComplexity), true
 
-	case "Comment.updated_at":
+	case "Comment.updatedAt":
 		if e.complexity.Comment.UpdatedAt == nil {
 			break
 		}
@@ -643,7 +643,7 @@ type Comment {
   id: Int!
   comment: String!
   user: User!
-  updated_at: String!
+  updatedAt: String!
 }
 
 type Event {
@@ -1198,7 +1198,7 @@ func (ec *executionContext) _Comment_user(ctx context.Context, field graphql.Col
 	return ec.marshalNUser2ᚖsircloᚋentitiesᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Comment_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
+func (ec *executionContext) _Comment_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4237,9 +4237,9 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "updated_at":
+		case "updatedAt":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Comment_updated_at(ctx, field, obj)
+				return ec._Comment_updatedAt(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

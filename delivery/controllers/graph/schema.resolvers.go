@@ -119,10 +119,28 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	if err != nil {
 		return nil, err
 	}
-	var response model.LoginResponse
-	response.Code = 200
-	response.Message = "berhasil membuat user"
-	return &response, nil
+	hashedPassword, err_checkdata := r.authRepo.GetEncryptPassword(user.Email)
+	if err_checkdata != nil {
+		return nil, errors.New("email tidak ditemukan")
+	}
+	err_compare := entities.ComparePassword(hashedPassword, password)
+	if err_compare != nil {
+		return nil, errors.New("password salah")
+	}
+	token, _, err := r.authRepo.Login(user.Email)
+	if err != nil {
+		return nil, errors.New("yang bener inputnya cuk")
+	}
+	var hasil model.LoginResponse
+	hasil.Code = 200
+	hasil.Message = "selamat anda berhasil membuat user dan login"
+	hasil.Token = token
+	var penampung model.User
+	penampung.ID = &user.Id
+	penampung.Name = user.Name
+	penampung.Email = user.Email
+	hasil.User = &penampung
+	return &hasil, nil
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context) (*model.SuccessResponse, error) {
@@ -270,7 +288,24 @@ func (r *queryResolver) Login(ctx context.Context, email string, password string
 }
 
 func (r *queryResolver) GetProfile(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginId := dataLogin.(int)
+	responseData, err := r.userRepo.GetUserById(loginId)
+
+	if err != nil {
+		return nil, errors.New("not found")
+	}
+
+	var userResponseData model.User
+
+	userResponseData.ID = &responseData.Id
+	userResponseData.Name = responseData.Name
+	userResponseData.Email = responseData.Email
+
+	return &userResponseData, nil
 }
 
 func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
@@ -296,14 +331,23 @@ func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, userID int) (*model.User, error) {
-	// dataLogin := ctx.Value("EchoContextKey")
-	// if dataLogin == nil {
-	// 	return nil, errors.New("unauthorized")
-	// } else {
-	// 	convId := ctx.Value("EchoContextKey")
-	// 	fmt.Println("id user", convId)
-	// }
-	panic(fmt.Errorf("not implemented"))
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	responseData, err := r.userRepo.GetUserById(userID)
+
+	if err != nil {
+		return nil, errors.New("not found")
+	}
+
+	var userResponseData model.User
+
+	userResponseData.ID = &responseData.Id
+	userResponseData.Name = responseData.Name
+	userResponseData.Email = responseData.Email
+
+	return &userResponseData, nil
 }
 
 func (r *queryResolver) GetParticipants(ctx context.Context, eventID int) ([]*model.User, error) {
@@ -341,7 +385,7 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int) ([]*model.
 		user.ID = &v.User.Id
 		user.Name = v.User.Name
 		user.Email = v.User.Email
-		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment})
+		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
 	}
 	return commentResponseData, nil
 }
@@ -355,6 +399,7 @@ func (r *queryResolver) GetComment(ctx context.Context, commentID int) (*model.C
 	var commentResponseData model.Comment
 	commentResponseData.ID = responseData.Id
 	commentResponseData.Comment = responseData.Comment
+	commentResponseData.UpdatedAt = responseData.UpdatedAt
 	var user model.User
 	user.ID = &responseData.User.Id
 	user.Name = responseData.User.Name

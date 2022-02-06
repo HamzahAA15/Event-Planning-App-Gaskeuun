@@ -32,6 +32,23 @@ func (ur *UserRepository) GetUsers() ([]entities.User, error) {
 	return users, nil
 }
 
+func (ur *UserRepository) GetUserById(id int) (entities.User, error) {
+	var user entities.User
+	result, err := ur.db.Query("select id, name, email, image_url from users where deleted_at is null AND id = ?", id)
+	if err != nil {
+		return user, err
+	}
+	defer result.Close()
+	for result.Next() {
+		err := result.Scan(&user.Id, &user.Name, &user.Email, &user.ImageUrl)
+		if err != nil {
+			return user, fmt.Errorf("user not found")
+		}
+		return user, nil
+	}
+	return user, fmt.Errorf("user not found")
+}
+
 func (ur *UserRepository) DeleteUser(id int) error {
 	result, err := ur.db.Exec("UPDATE users SET deleted_at = now() where id = ? AND deleted_at IS null", id)
 	if err != nil {

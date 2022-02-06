@@ -405,7 +405,7 @@ func (r *queryResolver) GetComment(ctx context.Context, commentID int) (*model.C
 	return &commentResponseData, nil
 }
 
-func (r *queryResolver) GetEvents(ctx context.Context) ([]*model.Event, error) {
+func (r *queryResolver) GetEvents(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
 	eventResponseData := []*model.Event{}
 	responseData, err := r.eventRepo.GetEvents()
 	if err != nil {
@@ -437,7 +437,11 @@ func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event
 	return &modelData, nil
 }
 
-func (r *queryResolver) GetEventParam(ctx context.Context, param *string) ([]*model.Event, error) {
+func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *int, limit *int) ([]*model.Event, error) {
+	strParam := " "
+	if param == nil {
+		param = &strParam
+	}
 	responseData, err := r.eventRepo.GetEventParam(*param)
 	if err != nil {
 		return nil, err
@@ -449,6 +453,41 @@ func (r *queryResolver) GetEventParam(ctx context.Context, param *string) ([]*mo
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
 
+	return eventResponseData, nil
+}
+
+func (r *queryResolver) GetMyEvent(ctx context.Context) ([]*model.Event, error) {
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginId := dataLogin.(int)
+	eventResponseData := []*model.Event{}
+	responseData, err := r.eventRepo.GetMyEvents(loginId)
+	if err != nil {
+		return nil, err
+	}
+	for _, val := range responseData {
+		id := val.Id
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+	}
+	return eventResponseData, nil
+}
+
+func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, page *int, limit *int) ([]*model.Event, error) {
+	eventResponseData := []*model.Event{}
+	responseData, err := r.eventRepo.GetMyEvents(categoryID)
+	if err != nil {
+		return nil, err
+	}
+	for _, val := range responseData {
+		id := val.Id
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+	}
 	return eventResponseData, nil
 }
 

@@ -49,7 +49,7 @@ func (er *EventRepository) GetEvent(eventID int) (entities.Event, error) {
 func (er *EventRepository) GetEventParam(param string) ([]entities.EventCat, error) {
 	var events []entities.EventCat
 	convParam := "%" + param + "%"
-	result, err := er.db.Query(`SELECT e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, c.id as category_id, c.category FROM events e JOIN categories c ON e.category_id = c.id WHERE e.title LIKE ? OR e.location LIKE ? OR c.category LIKE ? AND deleted_at IS NULL`, convParam, convParam, convParam)
+	result, err := er.db.Query(`SELECT e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, c.id as category_id, c.category FROM events e JOIN categories c ON e.category_id = c.id WHERE e.title LIKE ? OR e.location LIKE ? OR c.category LIKE ? AND e.deleted_at IS NULL`, convParam, convParam, convParam)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +63,66 @@ func (er *EventRepository) GetEventParam(param string) ([]entities.EventCat, err
 		}
 		events = append(events, event)
 	}
+	return events, nil
+}
+
+func (er *EventRepository) GetMyEvents(loginId int) ([]entities.Event, error) {
+	var events []entities.Event
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE user_id = ? AND deleted_at IS NULL`, loginId)
+	if err != nil {
+		return nil, err
+	}
+
+	for result.Next() {
+		var event entities.Event
+
+		err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl)
+
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+func (er *EventRepository) GetEventByCatID(categoryID int) ([]entities.Event, error) {
+	var events []entities.Event
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE category_id = ? AND deleted_at IS NULL`, categoryID)
+	if err != nil {
+		return nil, err
+	}
+
+	for result.Next() {
+		var event entities.Event
+
+		err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl)
+
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+func (er *EventRepository) GetEventJoinedByUser(loginId int) ([]entities.Event, error) {
+	var events []entities.Event
+	// result, err := er.db.Query(`select e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, p.user_id from events e JOIN participants p ON e.user_id = p.user_id WHERE p.user_id = ? AND p.deleted_at IS NULL`, loginId)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// for result.Next() {
+	// 	var event entities.Event
+
+	// 	err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl)
+
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	events = append(events, event)
+	// }
 	return events, nil
 }
 

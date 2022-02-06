@@ -119,7 +119,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	if err != nil {
 		return nil, err
 	}
-	token, _, err := r.authRepo.Login(user.Email)
+	token, theId, err := r.authRepo.Login(user.Email)
 	if err != nil {
 		return nil, errors.New("error dari database")
 	}
@@ -128,7 +128,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	hasil.Message = "selamat anda berhasil membuat user dan login"
 	hasil.Token = token
 	var penampung model.User
-	penampung.ID = &user.Id
+	penampung.ID = &theId.Id
 	penampung.Name = user.Name
 	penampung.Email = user.Email
 	hasil.User = &penampung

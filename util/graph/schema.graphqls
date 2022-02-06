@@ -44,10 +44,10 @@ type Event {
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
-  getUsers: [User!]
+  getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
-  getParticipants(eventId: Int!): [User!]
-  getComments(eventId: Int!): [Comment!]
+  getParticipants(eventId: Int!, page: Int, limit: Int): [User!]
+  getComments(eventId: Int!, page: Int, limit: Int): [Comment!]
   getComment(commentId: Int!): Comment!
   getEvents: [Event!]
   getEvent(eventId: Int!): Event!

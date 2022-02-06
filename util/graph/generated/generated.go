@@ -85,14 +85,14 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetComment      func(childComplexity int, commentID int) int
-		GetComments     func(childComplexity int, eventID int) int
+		GetComments     func(childComplexity int, eventID int, page *int, limit *int) int
 		GetEvent        func(childComplexity int, eventID int) int
 		GetEventParam   func(childComplexity int, param *string) int
 		GetEvents       func(childComplexity int) int
-		GetParticipants func(childComplexity int, eventID int) int
+		GetParticipants func(childComplexity int, eventID int, page *int, limit *int) int
 		GetProfile      func(childComplexity int) int
 		GetUser         func(childComplexity int, userID int) int
-		GetUsers        func(childComplexity int) int
+		GetUsers        func(childComplexity int, page *int, limit *int) int
 		Login           func(childComplexity int, email string, password string) int
 	}
 
@@ -126,10 +126,10 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Login(ctx context.Context, email string, password string) (*model.LoginResponse, error)
 	GetProfile(ctx context.Context) (*model.User, error)
-	GetUsers(ctx context.Context) ([]*model.User, error)
+	GetUsers(ctx context.Context, page *int, limit *int) ([]*model.User, error)
 	GetUser(ctx context.Context, userID int) (*model.User, error)
-	GetParticipants(ctx context.Context, eventID int) ([]*model.User, error)
-	GetComments(ctx context.Context, eventID int) ([]*model.Comment, error)
+	GetParticipants(ctx context.Context, eventID int, page *int, limit *int) ([]*model.User, error)
+	GetComments(ctx context.Context, eventID int, page *int, limit *int) ([]*model.Comment, error)
 	GetComment(ctx context.Context, commentID int) (*model.Comment, error)
 	GetEvents(ctx context.Context) ([]*model.Event, error)
 	GetEvent(ctx context.Context, eventID int) (*model.Event, error)
@@ -419,7 +419,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetComments(childComplexity, args["eventId"].(int)), true
+		return e.complexity.Query.GetComments(childComplexity, args["eventId"].(int), args["page"].(*int), args["limit"].(*int)), true
 
 	case "Query.getEvent":
 		if e.complexity.Query.GetEvent == nil {
@@ -462,7 +462,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetParticipants(childComplexity, args["eventId"].(int)), true
+		return e.complexity.Query.GetParticipants(childComplexity, args["eventId"].(int), args["page"].(*int), args["limit"].(*int)), true
 
 	case "Query.getProfile":
 		if e.complexity.Query.GetProfile == nil {
@@ -488,7 +488,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.GetUsers(childComplexity), true
+		args, err := ec.field_Query_getUsers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUsers(childComplexity, args["page"].(*int), args["limit"].(*int)), true
 
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
@@ -661,10 +666,10 @@ type Event {
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
-  getUsers: [User!]
+  getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
-  getParticipants(eventId: Int!): [User!]
-  getComments(eventId: Int!): [Comment!]
+  getParticipants(eventId: Int!, page: Int, limit: Int): [User!]
+  getComments(eventId: Int!, page: Int, limit: Int): [Comment!]
   getComment(commentId: Int!): Comment!
   getEvents: [Event!]
   getEvent(eventId: Int!): Event!
@@ -968,6 +973,24 @@ func (ec *executionContext) field_Query_getComments_args(ctx context.Context, ra
 		}
 	}
 	args["eventId"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
 	return args, nil
 }
 
@@ -1013,6 +1036,24 @@ func (ec *executionContext) field_Query_getParticipants_args(ctx context.Context
 		}
 	}
 	args["eventId"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
 	return args, nil
 }
 
@@ -1028,6 +1069,30 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 		}
 	}
 	args["userId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
 	return args, nil
 }
 
@@ -2230,9 +2295,16 @@ func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.C
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getUsers_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUsers(rctx)
+		return ec.resolvers.Query().GetUsers(rctx, args["page"].(*int), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2313,7 +2385,7 @@ func (ec *executionContext) _Query_getParticipants(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetParticipants(rctx, args["eventId"].(int))
+		return ec.resolvers.Query().GetParticipants(rctx, args["eventId"].(int), args["page"].(*int), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2352,7 +2424,7 @@ func (ec *executionContext) _Query_getComments(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetComments(rctx, args["eventId"].(int))
+		return ec.resolvers.Query().GetComments(rctx, args["eventId"].(int), args["page"].(*int), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

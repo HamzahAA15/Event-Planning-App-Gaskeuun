@@ -301,7 +301,7 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.User, error) {
 	return &userResponseData, nil
 }
 
-func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
+func (r *queryResolver) GetUsers(ctx context.Context, page *int, limit *int) ([]*model.User, error) {
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
@@ -344,7 +344,7 @@ func (r *queryResolver) GetUser(ctx context.Context, userID int) (*model.User, e
 	return &userResponseData, nil
 }
 
-func (r *queryResolver) GetParticipants(ctx context.Context, eventID int) ([]*model.User, error) {
+func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *int, limit *int) ([]*model.User, error) {
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
@@ -366,7 +366,7 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int) ([]*mo
 	return userResponseData, nil
 }
 
-func (r *queryResolver) GetComments(ctx context.Context, eventID int) ([]*model.Comment, error) {
+func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int, limit *int) ([]*model.Comment, error) {
 	responseData, err := r.commentRepo.GetComments(eventID)
 	if err != nil {
 		return nil, err

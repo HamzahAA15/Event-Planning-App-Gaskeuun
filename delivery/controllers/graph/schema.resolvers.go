@@ -316,7 +316,7 @@ func (r *queryResolver) GetUsers(ctx context.Context, page *int, limit *int) ([]
 	userResponseData := []*model.User{}
 
 	for _, v := range responseData {
-		theId := int(v.Id)
+		theId := v.Id
 		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
 
@@ -359,7 +359,7 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *
 	userResponseData := []*model.User{}
 
 	for _, v := range responseData {
-		theId := int(v.Id)
+		theId := v.Id
 		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
 
@@ -379,7 +379,8 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 		user.ID = &v.User.Id
 		user.Name = v.User.Name
 		user.Email = v.User.Email
-		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
+		id := v.Id
+		commentResponseData = append(commentResponseData, &model.Comment{ID: id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
 	}
 	return commentResponseData, nil
 }
@@ -410,7 +411,8 @@ func (r *queryResolver) GetEvents(ctx context.Context) ([]*model.Event, error) {
 		return nil, err
 	}
 	for _, val := range responseData {
-		eventResponseData = append(eventResponseData, &model.Event{ID: &val.Id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		id := val.Id
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
 	return eventResponseData, nil
 }
@@ -442,7 +444,8 @@ func (r *queryResolver) GetEventParam(ctx context.Context, param *string) ([]*mo
 	eventResponseData := []*model.Event{}
 
 	for _, val := range responseData {
-		eventResponseData = append(eventResponseData, &model.Event{ID: &val.Id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		id := val.Id
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
 
 	return eventResponseData, nil

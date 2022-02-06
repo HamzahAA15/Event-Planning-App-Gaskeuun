@@ -107,7 +107,7 @@ func (r *mutationResolver) DeleteComment(ctx context.Context, commentID int, eve
 	return &response, nil
 }
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.SuccessResponse, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.LoginResponse, error) {
 	var user entities.User
 	user.Name = input.Name
 	user.Email = input.Email
@@ -119,7 +119,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	if err != nil {
 		return nil, err
 	}
-	var response model.SuccessResponse
+	var response model.LoginResponse
 	response.Code = 200
 	response.Message = "berhasil membuat user"
 	return &response, nil
@@ -269,6 +269,10 @@ func (r *queryResolver) Login(ctx context.Context, email string, password string
 	return &hasil, nil
 }
 
+func (r *queryResolver) GetProfile(ctx context.Context) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
@@ -285,7 +289,7 @@ func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
 
 	for _, v := range responseData {
 		theId := int(v.Id)
-		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, Image: &v.ImageUrl})
+		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
 
 	return userResponseData, nil
@@ -318,7 +322,7 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int) ([]*mo
 
 	for _, v := range responseData {
 		theId := int(v.Id)
-		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, Image: &v.ImageUrl})
+		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
 
 	return userResponseData, nil

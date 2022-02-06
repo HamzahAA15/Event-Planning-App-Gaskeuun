@@ -90,6 +90,7 @@ type ComplexityRoot struct {
 		GetEventParam   func(childComplexity int, param *string) int
 		GetEvents       func(childComplexity int) int
 		GetParticipants func(childComplexity int, eventID int) int
+		GetProfile      func(childComplexity int) int
 		GetUser         func(childComplexity int, userID int) int
 		GetUsers        func(childComplexity int) int
 		Login           func(childComplexity int, email string, password string) int
@@ -103,7 +104,7 @@ type ComplexityRoot struct {
 	User struct {
 		Email    func(childComplexity int) int
 		ID       func(childComplexity int) int
-		Image    func(childComplexity int) int
+		ImageURL func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Password func(childComplexity int) int
 	}
@@ -115,7 +116,7 @@ type MutationResolver interface {
 	CreateComment(ctx context.Context, eventID int, comment string) (*model.SuccessResponse, error)
 	EditComment(ctx context.Context, commentID int, eventID int, comment string) (*model.SuccessResponse, error)
 	DeleteComment(ctx context.Context, commentID int, eventID int) (*model.SuccessResponse, error)
-	CreateUser(ctx context.Context, input model.NewUser) (*model.SuccessResponse, error)
+	CreateUser(ctx context.Context, input model.NewUser) (*model.LoginResponse, error)
 	DeleteUser(ctx context.Context) (*model.SuccessResponse, error)
 	EditUser(ctx context.Context, edit model.EditUser) (*model.SuccessResponse, error)
 	CreateEvent(ctx context.Context, input model.NewEvent) (*model.SuccessResponse, error)
@@ -124,6 +125,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Login(ctx context.Context, email string, password string) (*model.LoginResponse, error)
+	GetProfile(ctx context.Context) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, userID int) (*model.User, error)
 	GetParticipants(ctx context.Context, eventID int) ([]*model.User, error)
@@ -261,7 +263,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginResponse.Token(childComplexity), true
 
-	case "LoginResponse.User":
+	case "LoginResponse.user":
 		if e.complexity.LoginResponse.User == nil {
 			break
 		}
@@ -462,6 +464,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetParticipants(childComplexity, args["eventId"].(int)), true
 
+	case "Query.getProfile":
+		if e.complexity.Query.GetProfile == nil {
+			break
+		}
+
+		return e.complexity.Query.GetProfile(childComplexity), true
+
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
 			break
@@ -521,12 +530,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
-	case "User.image":
-		if e.complexity.User.Image == nil {
+	case "User.imageUrl":
+		if e.complexity.User.ImageURL == nil {
 			break
 		}
 
-		return e.complexity.User.Image(childComplexity), true
+		return e.complexity.User.ImageURL(childComplexity), true
 
 	case "User.name":
 		if e.complexity.User.Name == nil {
@@ -620,14 +629,14 @@ type User {
   name: String!
   email: String!
   password: String!
-  image: String
+  imageUrl: String
 }
 
 type LoginResponse {
   code: Int!
   message: String!
   token: String!
-  User: User!
+  user: User!
 }
 
 type Comment {
@@ -651,6 +660,7 @@ type Event {
 
 type Query {
   login(email: String!, password: String!): LoginResponse!
+  getProfile: User!
   getUsers: [User!]
   getUser(userId: Int!): User!
   getParticipants(eventId: Int!): [User!]
@@ -671,7 +681,7 @@ input EditUser {
   name: String
   email: String
   password: String
-  image: String
+  imageUrl: String
 }
 
 input NewEvent {
@@ -705,7 +715,7 @@ type Mutation {
     comment: String!
   ): SuccessResponse!
   deleteComment(commentId: Int!, eventId: Int!): SuccessResponse!
-  createUser(input: NewUser!): SuccessResponse!
+  createUser(input: NewUser!): LoginResponse!
   deleteUser: SuccessResponse!
   editUser(edit: EditUser!): SuccessResponse!
   createEvent(input: NewEvent!): SuccessResponse!
@@ -1637,7 +1647,7 @@ func (ec *executionContext) _LoginResponse_token(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _LoginResponse_User(ctx context.Context, field graphql.CollectedField, obj *model.LoginResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _LoginResponse_user(ctx context.Context, field graphql.CollectedField, obj *model.LoginResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1919,9 +1929,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.SuccessResponse)
+	res := resTmp.(*model.LoginResponse)
 	fc.Result = res
-	return ec.marshalNSuccessResponse2ᚖsircloᚋentitiesᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalNLoginResponse2ᚖsircloᚋentitiesᚋmodelᚐLoginResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2167,6 +2177,41 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	res := resTmp.(*model.LoginResponse)
 	fc.Result = res
 	return ec.marshalNLoginResponse2ᚖsircloᚋentitiesᚋmodelᚐLoginResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetProfile(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖsircloᚋentitiesᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2754,7 +2799,7 @@ func (ec *executionContext) _User_password(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_image(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_imageUrl(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2772,7 +2817,7 @@ func (ec *executionContext) _User_image(ctx context.Context, field graphql.Colle
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Image, nil
+		return obj.ImageURL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4012,11 +4057,11 @@ func (ec *executionContext) unmarshalInputEditUser(ctx context.Context, obj inte
 			if err != nil {
 				return it, err
 			}
-		case "image":
+		case "imageUrl":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
-			it.Image, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageUrl"))
+			it.ImageURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4358,9 +4403,9 @@ func (ec *executionContext) _LoginResponse(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "User":
+		case "user":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._LoginResponse_User(ctx, field, obj)
+				return ec._LoginResponse_user(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4548,6 +4593,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_login(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getProfile":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getProfile(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4843,9 +4911,9 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "image":
+		case "imageUrl":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._User_image(ctx, field, obj)
+				return ec._User_imageUrl(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

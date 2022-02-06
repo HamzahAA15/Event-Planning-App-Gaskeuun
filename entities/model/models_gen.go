@@ -23,7 +23,7 @@ type EditUser struct {
 	Name     *string `json:"name"`
 	Email    *string `json:"email"`
 	Password *string `json:"password"`
-	Image    *string `json:"image"`
+	ImageURL *string `json:"imageUrl"`
 }
 
 type Event struct {
@@ -42,7 +42,7 @@ type LoginResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Token   string `json:"token"`
-	User    *User  `json:"User"`
+	User    *User  `json:"user"`
 }
 
 type NewEvent struct {
@@ -72,5 +72,5 @@ type User struct {
 	Name     string  `json:"name"`
 	Email    string  `json:"email"`
 	Password string  `json:"password"`
-	Image    *string `json:"image"`
+	ImageURL *string `json:"imageUrl"`
 }

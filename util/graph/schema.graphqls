@@ -12,14 +12,14 @@ type User {
   name: String!
   email: String!
   password: String!
-  image: String
+  imageUrl: String
 }
 
 type LoginResponse {
   code: Int!
   message: String!
   token: String!
-  User: User!
+  user: User!
 }
 
 type Comment {
@@ -43,6 +43,7 @@ type Event {
 
 type Query {
   login(email: String!, password: String!): LoginResponse!
+  getProfile: User!
   getUsers: [User!]
   getUser(userId: Int!): User!
   getParticipants(eventId: Int!): [User!]
@@ -63,7 +64,7 @@ input EditUser {
   name: String
   email: String
   password: String
-  image: String
+  imageUrl: String
 }
 
 input NewEvent {
@@ -97,7 +98,7 @@ type Mutation {
     comment: String!
   ): SuccessResponse!
   deleteComment(commentId: Int!, eventId: Int!): SuccessResponse!
-  createUser(input: NewUser!): SuccessResponse!
+  createUser(input: NewUser!): LoginResponse!
   deleteUser: SuccessResponse!
   editUser(edit: EditUser!): SuccessResponse!
   createEvent(input: NewEvent!): SuccessResponse!

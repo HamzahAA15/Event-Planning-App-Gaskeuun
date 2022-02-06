@@ -376,11 +376,12 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 
 	for _, v := range responseData {
 		var user model.User
-		user.ID = &v.User.Id
+		id := v.User.Id
+		user.ID = &id
 		user.Name = v.User.Name
 		user.Email = v.User.Email
-		id := v.Id
-		commentResponseData = append(commentResponseData, &model.Comment{ID: id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
+
+		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
 	}
 	return commentResponseData, nil
 }

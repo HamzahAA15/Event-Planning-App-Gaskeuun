@@ -119,17 +119,9 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	if err != nil {
 		return nil, err
 	}
-	hashedPassword, err_checkdata := r.authRepo.GetEncryptPassword(user.Email)
-	if err_checkdata != nil {
-		return nil, errors.New("email tidak ditemukan")
-	}
-	err_compare := entities.ComparePassword(hashedPassword, password)
-	if err_compare != nil {
-		return nil, errors.New("password salah")
-	}
 	token, _, err := r.authRepo.Login(user.Email)
 	if err != nil {
-		return nil, errors.New("yang bener inputnya cuk")
+		return nil, errors.New("error dari database")
 	}
 	var hasil model.LoginResponse
 	hasil.Code = 200

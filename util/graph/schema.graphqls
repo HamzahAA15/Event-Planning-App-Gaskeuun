@@ -46,7 +46,7 @@ type Query {
   getProfile: User!
   getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
-  getParticipants(eventId: Int!, page: Int, limit: Int): [User!]
+  getParticipants(eventId: Int!, page: Int, limit: Int): [User!] 
   getComments(eventId: Int!, page: Int, limit: Int): [Comment!]
   getComment(commentId: Int!): Comment!
   getEvents: [Event!]

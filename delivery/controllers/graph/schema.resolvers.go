@@ -296,6 +296,7 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.User, error) {
 	userResponseData.ID = &responseData.Id
 	userResponseData.Name = responseData.Name
 	userResponseData.Email = responseData.Email
+	userResponseData.ImageURL = &responseData.ImageUrl
 
 	return &userResponseData, nil
 }
@@ -338,6 +339,7 @@ func (r *queryResolver) GetUser(ctx context.Context, userID int) (*model.User, e
 	userResponseData.ID = &responseData.Id
 	userResponseData.Name = responseData.Name
 	userResponseData.Email = responseData.Email
+	userResponseData.ImageURL = &responseData.ImageUrl
 
 	return &userResponseData, nil
 }

@@ -10,7 +10,7 @@ type Comment struct {
 }
 
 type CommentsResponse struct {
-	Comment   []*Comment `json:"comment"`
+	Comments  []*Comment `json:"comments"`
 	TotalPage int        `json:"totalPage"`
 }
 

@@ -51,7 +51,7 @@ type ComplexityRoot struct {
 	}
 
 	CommentsResponse struct {
-		Comment   func(childComplexity int) int
+		Comments  func(childComplexity int) int
 		TotalPage func(childComplexity int) int
 	}
 
@@ -195,12 +195,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Comment.User(childComplexity), true
 
-	case "CommentsResponse.comment":
-		if e.complexity.CommentsResponse.Comment == nil {
+	case "CommentsResponse.comments":
+		if e.complexity.CommentsResponse.Comments == nil {
 			break
 		}
 
-		return e.complexity.CommentsResponse.Comment(childComplexity), true
+		return e.complexity.CommentsResponse.Comments(childComplexity), true
 
 	case "CommentsResponse.totalPage":
 		if e.complexity.CommentsResponse.TotalPage == nil {
@@ -744,7 +744,7 @@ type Event {
 }
 
 type CommentsResponse {
-  comment: [Comment!]
+  comments: [Comment!]
   totalPage: Int!
 }
 
@@ -752,6 +752,7 @@ type ParticipantsResponse {
   participants: [User!]
   totalPage: Int!
 }
+
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
@@ -1489,7 +1490,7 @@ func (ec *executionContext) _Comment_updatedAt(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CommentsResponse_comment(ctx context.Context, field graphql.CollectedField, obj *model.CommentsResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _CommentsResponse_comments(ctx context.Context, field graphql.CollectedField, obj *model.CommentsResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1507,7 +1508,7 @@ func (ec *executionContext) _CommentsResponse_comment(ctx context.Context, field
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Comment, nil
+		return obj.Comments, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4788,9 +4789,9 @@ func (ec *executionContext) _CommentsResponse(ctx context.Context, sel ast.Selec
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CommentsResponse")
-		case "comment":
+		case "comments":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._CommentsResponse_comment(ctx, field, obj)
+				return ec._CommentsResponse_comments(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

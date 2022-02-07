@@ -411,7 +411,7 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 		return nil, errors.New("commentnya ga ada di event id ini")
 	}
 	var hasil model.CommentsResponse
-	hasil.Comment = commentResponseData
+	hasil.Comments = commentResponseData
 	hasil.TotalPage = int(math.Ceil(float64(r.commentRepo.GetTotalPageComments(eventID)) / float64(*limit)))
 	return &hasil, nil
 }

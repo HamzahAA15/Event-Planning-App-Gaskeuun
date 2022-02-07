@@ -106,23 +106,23 @@ func (er *EventRepository) GetEventByCatID(categoryID int) ([]entities.Event, er
 	return events, nil
 }
 
-func (er *EventRepository) GetEventJoinedByUser(loginId int) ([]entities.Event, error) {
-	var events []entities.Event
-	// result, err := er.db.Query(`select e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, p.user_id from events e JOIN participants p ON e.user_id = p.user_id WHERE p.user_id = ? AND p.deleted_at IS NULL`, loginId)
-	// if err != nil {
-	// 	return nil, err
-	// }
+func (er *EventRepository) GetEventJoinedByUser(loginId int) ([]entities.JoinedEvent, error) {
+	var events []entities.JoinedEvent
+	result, err := er.db.Query(`select e.id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, p.event_id, p.user_id as participant from events e JOIN participants p ON e.id = p.event_id WHERE p.user_id = ? AND p.deleted_at IS NULL`, loginId)
+	if err != nil {
+		return nil, err
+	}
 
-	// for result.Next() {
-	// 	var event entities.Event
+	for result.Next() {
+		var event entities.JoinedEvent
 
-	// 	err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl)
+		err = result.Scan(&event.Id, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl, &event.EventId, &event.UserId)
 
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	events = append(events, event)
-	// }
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
 	return events, nil
 }
 

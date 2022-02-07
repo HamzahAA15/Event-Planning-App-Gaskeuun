@@ -57,6 +57,11 @@ type EventIDResponse struct {
 	Comments     []*Comment `json:"Comments"`
 }
 
+type EventResponse struct {
+	Event     []*Event `json:"event"`
+	TotalPage int      `json:"totalPage"`
+}
+
 type LoginResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

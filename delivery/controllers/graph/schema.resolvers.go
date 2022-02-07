@@ -208,12 +208,9 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, eventID int, edit mo
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
 	}
-	userID := dataLogin.(int)
-	event, err := r.eventRepo.GetEvent(eventID)
-	if err != nil {
-		return nil, err
-	}
-	event.UserID = userID
+	loginId := dataLogin.(int)
+	var event entities.Event
+	event.UserID = loginId
 	event.CategoryId = *edit.CategoryID
 	event.Title = *edit.Title
 	event.Host = *edit.Host
@@ -222,7 +219,7 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, eventID int, edit mo
 	event.Description = *edit.Description
 	event.ImageUrl = *edit.ImageURL
 
-	_, err = r.eventRepo.UpdateEvent(event)
+	err := r.eventRepo.UpdateEvent(event, eventID, loginId)
 	if err != nil {
 		return nil, err
 	}
@@ -240,12 +237,7 @@ func (r *mutationResolver) DeleteEvent(ctx context.Context, eventID int) (*model
 		return nil, errors.New("unauthorized")
 	}
 	loginId := dataLogin.(int)
-	event, err := r.eventRepo.GetEvent(eventID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = r.eventRepo.DeleteEvent(event, loginId)
+	err := r.eventRepo.DeleteEvent(eventID, loginId)
 	if err != nil {
 		return nil, err
 	}
@@ -431,37 +423,51 @@ func (r *queryResolver) GetComment(ctx context.Context, commentID int) (*model.C
 	user.ID = &responseData.User.Id
 	user.Name = responseData.User.Name
 	user.Email = responseData.User.Email
-	user.ImageURL = responseData.User.ImageUrl
+	user.ImageURL = &responseData.User.ImageUrl
 	commentResponseData.User = &user
 
 	return &commentResponseData, nil
 }
 
-func (r *queryResolver) GetEvents(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
-	eventResponseData := []*model.Event{}
-	responseData, err := r.eventRepo.GetEvents()
+func (r *queryResolver) GetEvents(ctx context.Context, page *int, limit *int) (*model.EventResponse, error) {
+	var param string
+	if page == nil {
+		convPage := 1
+		page = &convPage
+	}
+	if limit == nil {
+		convLimit := 10
+		limit = &convLimit
+	}
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.eventRepo.GetEvents(*limit, offset)
 	if err != nil {
 		return nil, err
 	}
+	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
-	return eventResponseData, nil
+	var result model.EventResponse
+	result.Event = eventResponseData
+	result.TotalPage = int(math.Ceil(float64(r.eventRepo.GetTotalEvents(param)) / float64(*limit)))
+
+	return &result, nil
 }
 
 func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.EventIDResponse, error) {
 	responseDataEvent, err := r.eventRepo.GetEvent(eventID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("event error")
 	}
 	responseDataParticipants, errPar := r.participantRepo.GetParticipants(eventID, 5, 0)
 	if errPar != nil {
-		return nil, err
+		return nil, errors.New("par error")
 	}
 	responseDataComments, errCom := r.commentRepo.GetComments(eventID, 5, 0)
 	if errCom != nil {
-		return nil, err
+		return nil, errCom
 	}
 
 	modelData := model.EventIDResponse{
@@ -498,12 +504,21 @@ func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event
 	return &modelData, nil
 }
 
-func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *int, limit *int) ([]*model.Event, error) {
+func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *int, limit *int) (*model.EventResponse, error) {
 	strParam := " "
 	if param == nil {
 		param = &strParam
 	}
-	responseData, err := r.eventRepo.GetEventParam(*param)
+	if page == nil {
+		convPage := 1
+		page = &convPage
+	}
+	if limit == nil {
+		convLimit := 10
+		limit = &convLimit
+	}
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.eventRepo.GetEventParam(*param, *limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -513,61 +528,105 @@ func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *
 		id := val.Id
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
+	var result model.EventResponse
+	result.Event = eventResponseData
+	result.TotalPage = int(math.Ceil(float64(r.eventRepo.GetTotalEvents(*param)) / float64(*limit)))
 
-	return eventResponseData, nil
+	return &result, nil
 }
 
-func (r *queryResolver) GetMyEvent(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
+func (r *queryResolver) GetMyEvent(ctx context.Context, page *int, limit *int) (*model.EventResponse, error) {
+	if page == nil {
+		convPage := 1
+		page = &convPage
+	}
+	if limit == nil {
+		convLimit := 10
+		limit = &convLimit
+	}
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
 	}
 	loginId := dataLogin.(int)
-	eventResponseData := []*model.Event{}
-	responseData, err := r.eventRepo.GetMyEvents(loginId)
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.eventRepo.GetMyEvents(loginId, *limit, offset)
 	if err != nil {
 		return nil, err
 	}
+	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
-	return eventResponseData, nil
+	var result model.EventResponse
+	result.Event = eventResponseData
+	result.TotalPage = int(math.Ceil(float64(r.eventRepo.GetTotalMyEvents(loginId)) / float64(*limit)))
+
+	return &result, nil
 }
 
-func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
+func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, limit *int) (*model.EventResponse, error) {
+	if page == nil {
+		convPage := 1
+		page = &convPage
+	}
+	if limit == nil {
+		convLimit := 10
+		limit = &convLimit
+	}
+	offset := ((*page - 1) * *limit)
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
 	}
 	loginId := dataLogin.(int)
-	eventResponseData := []*model.Event{}
-	responseData, err := r.eventRepo.GetEventJoinedByUser(loginId)
+	responseData, err := r.eventRepo.GetEventJoinedByUser(loginId, *limit, offset)
 	if err != nil {
 		return nil, err
 	}
+	eventResponseData := []*model.Event{}
+
 	for _, val := range responseData {
 		id := val.Id
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
-	return eventResponseData, nil
+	var result model.EventResponse
+	result.Event = eventResponseData
+	result.TotalPage = int(math.Ceil(float64(r.eventRepo.GetTotalJoinedEvents(loginId)) / float64(*limit)))
+
+	return &result, nil
 }
 
-func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, param *string, page *int, limit *int) ([]*model.Event, error) {
+func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, param *string, page *int, limit *int) (*model.EventResponse, error) {
 	strParam := " "
 	if param == nil {
 		param = &strParam
 	}
-	eventResponseData := []*model.Event{}
-	responseData, err := r.eventRepo.GetEventByCatID(categoryID, *param)
+	if page == nil {
+		convPage := 1
+		page = &convPage
+	}
+	if limit == nil {
+		convLimit := 10
+		limit = &convLimit
+	}
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.eventRepo.GetEventByCatID(categoryID, *param, *limit, offset)
 	if err != nil {
 		return nil, err
 	}
+
+	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
 		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
 	}
-	return eventResponseData, nil
+	var result model.EventResponse
+	result.Event = eventResponseData
+	result.TotalPage = int(math.Ceil(float64(r.eventRepo.GetTotalEventsByCatId(categoryID, *param)) / float64(*limit)))
+
+	return &result, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

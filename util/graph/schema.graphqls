@@ -55,6 +55,11 @@ type EventIdResponse {
   Comments: [Comment!]
 }
 
+type EventResponse {
+  event: [Event!]
+  totalPage: Int!
+}
+
 type CommentsResponse {
   comments: [Comment!]
   totalPage: Int!
@@ -73,17 +78,17 @@ type Query {
   getParticipants(eventId: Int!, page: Int, limit: Int): ParticipantsResponse!
   getComments(eventId: Int!, page: Int, limit: Int): CommentsResponse!
   getComment(commentId: Int!): Comment!
-  getEvents(page: Int, limit: Int): [Event!]
+  getEvents(page: Int, limit: Int): EventResponse!
   getEvent(eventId: Int!): EventIdResponse!
-  getEventParam(param: String, page: Int, limit: Int): [Event!]
-  getMyEvent(page: Int, limit: Int): [Event!]
-  getEventJoinedByUser(page: Int, limit: Int): [Event!]
+  getEventParam(param: String, page: Int, limit: Int): EventResponse!
+  getMyEvent(page: Int, limit: Int): EventResponse!
+  getEventJoinedByUser(page: Int, limit: Int): EventResponse!
   getEventByCatId(
     categoryId: Int!
     param: String
     page: Int
     limit: Int
-  ): [Event!]
+  ): EventResponse!
 }
 
 input NewUser {

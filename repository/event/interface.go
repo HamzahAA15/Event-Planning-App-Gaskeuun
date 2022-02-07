@@ -3,13 +3,17 @@ package event
 import "sirclo/entities"
 
 type Event interface {
-	GetEvents() ([]entities.Event, error)
+	GetEvents(limit, offset int) ([]entities.Event, error)
 	GetEvent(eventID int) (entities.EventIdResponse, error)
-	GetEventParam(param string) ([]entities.EventCat, error)
-	GetMyEvents(loginId int) ([]entities.Event, error)
-	GetEventByCatID(categoryID int, param string) ([]entities.Event, error)
-	GetEventJoinedByUser(loginId int) ([]entities.JoinedEvent, error)
+	GetEventParam(param string, limit, offset int) ([]entities.EventCat, error)
+	GetMyEvents(loginId int, limit, offset int) ([]entities.Event, error)
+	GetEventByCatID(categoryID int, param string, limit, offset int) ([]entities.Event, error)
+	GetEventJoinedByUser(loginId int, limit, offset int) ([]entities.JoinedEvent, error)
+	GetTotalEvents(param string) int
+	GetTotalMyEvents(loginId int) int
+	GetTotalJoinedEvents(loginId int) int
+	GetTotalEventsByCatId(categoryID int, param string) int
 	CreateEvent(Event entities.Event) (entities.Event, error)
-	UpdateEvent(Event entities.Event) (entities.Event, error)
-	DeleteEvent(Event entities.Event, loginId int) (entities.Event, error)
+	UpdateEvent(Event entities.Event, eventID, loginId int) error
+	DeleteEvent(eventId int, loginId int) error
 }

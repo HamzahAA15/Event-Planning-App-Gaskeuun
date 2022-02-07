@@ -43,6 +43,25 @@ type Event struct {
 	ImageURL    *string `json:"imageUrl"`
 }
 
+type EventIDResponse struct {
+	ID           *int       `json:"id"`
+	UserID       int        `json:"userId"`
+	CategoryID   int        `json:"categoryId"`
+	Title        string     `json:"title"`
+	Host         string     `json:"host"`
+	Date         string     `json:"date"`
+	Location     string     `json:"location"`
+	Description  string     `json:"description"`
+	ImageURL     *string    `json:"imageUrl"`
+	Participants []*User    `json:"participants"`
+	Comments     []*Comment `json:"Comments"`
+}
+
+type EventResponse struct {
+	Event     []*Event `json:"event"`
+	TotalPage int      `json:"totalPage"`
+}
+
 type LoginResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

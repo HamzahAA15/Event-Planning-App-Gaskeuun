@@ -88,7 +88,7 @@ func (er *EventRepository) GetMyEvents(loginId int) ([]entities.Event, error) {
 
 func (er *EventRepository) GetEventByCatID(categoryID int) ([]entities.Event, error) {
 	var events []entities.Event
-	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE category_id = ? AND deleted_at IS NULL`, categoryID)
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE AND category_id = ? AND deleted_at IS NULL`, categoryID)
 	if err != nil {
 		return nil, err
 	}

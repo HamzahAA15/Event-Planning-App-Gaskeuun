@@ -14,12 +14,12 @@ func New(db *sql.DB) *ParticipantRepository {
 	return &ParticipantRepository{db: db}
 }
 
-func (pr *ParticipantRepository) GetParticipants(eventId int) ([]entities.User, error) {
+func (pr *ParticipantRepository) GetParticipants(eventId int, limit int, offset int) ([]entities.User, error) {
 	var users []entities.User
 	result, err := pr.db.Query(`
 	select users.id, users.name, users.email, users.image_url from users
 	JOIN participants ON users.Id = participants.user_id
-	where participants.deleted_at is null AND users.deleted_at is null AND participants.event_id = ?`, eventId)
+	where participants.deleted_at is null AND users.deleted_at is null AND participants.event_id = ? LIMIT ? OFFSET ?`, eventId, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -61,4 +61,17 @@ func (pr *ParticipantRepository) DeleteParticipant(eventId int, loginId int) err
 		return fmt.Errorf("user not found")
 	}
 	return nil
+}
+
+func (pr *ParticipantRepository) GetTotalPageParticipants(eventId int) int {
+	var hasil int
+	result_check, _ := pr.db.Query("select COUNT(id) from participants where event_id = ? AND deleted_at IS null", eventId)
+	for result_check.Next() {
+		err := result_check.Scan(&hasil) // sql null string kalau mau skip
+		if err != nil {
+			return 1
+		}
+		return hasil
+	}
+	return 1
 }

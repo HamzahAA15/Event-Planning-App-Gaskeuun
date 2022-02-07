@@ -50,6 +50,11 @@ type ComplexityRoot struct {
 		User      func(childComplexity int) int
 	}
 
+	CommentsResponse struct {
+		Comment   func(childComplexity int) int
+		TotalPage func(childComplexity int) int
+	}
+
 	Event struct {
 		CategoryID  func(childComplexity int) int
 		Date        func(childComplexity int) int
@@ -81,6 +86,11 @@ type ComplexityRoot struct {
 		EditComment       func(childComplexity int, commentID int, eventID int, comment string) int
 		EditUser          func(childComplexity int, edit model.EditUser) int
 		UpdateEvent       func(childComplexity int, eventID int, edit model.EditEvent) int
+	}
+
+	ParticipantsResponse struct {
+		Participants func(childComplexity int) int
+		TotalPage    func(childComplexity int) int
 	}
 
 	Query struct {
@@ -131,8 +141,8 @@ type QueryResolver interface {
 	GetProfile(ctx context.Context) (*model.User, error)
 	GetUsers(ctx context.Context, page *int, limit *int) ([]*model.User, error)
 	GetUser(ctx context.Context, userID int) (*model.User, error)
-	GetParticipants(ctx context.Context, eventID int, page *int, limit *int) ([]*model.User, error)
-	GetComments(ctx context.Context, eventID int, page *int, limit *int) ([]*model.Comment, error)
+	GetParticipants(ctx context.Context, eventID int, page *int, limit *int) (*model.ParticipantsResponse, error)
+	GetComments(ctx context.Context, eventID int, page *int, limit *int) (*model.CommentsResponse, error)
 	GetComment(ctx context.Context, commentID int) (*model.Comment, error)
 	GetEvents(ctx context.Context, page *int, limit *int) ([]*model.Event, error)
 	GetEvent(ctx context.Context, eventID int) (*model.Event, error)
@@ -184,6 +194,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Comment.User(childComplexity), true
+
+	case "CommentsResponse.comment":
+		if e.complexity.CommentsResponse.Comment == nil {
+			break
+		}
+
+		return e.complexity.CommentsResponse.Comment(childComplexity), true
+
+	case "CommentsResponse.totalPage":
+		if e.complexity.CommentsResponse.TotalPage == nil {
+			break
+		}
+
+		return e.complexity.CommentsResponse.TotalPage(childComplexity), true
 
 	case "Event.categoryId":
 		if e.complexity.Event.CategoryID == nil {
@@ -402,6 +426,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateEvent(childComplexity, args["eventId"].(int), args["edit"].(model.EditEvent)), true
+
+	case "ParticipantsResponse.participants":
+		if e.complexity.ParticipantsResponse.Participants == nil {
+			break
+		}
+
+		return e.complexity.ParticipantsResponse.Participants(childComplexity), true
+
+	case "ParticipantsResponse.totalPage":
+		if e.complexity.ParticipantsResponse.TotalPage == nil {
+			break
+		}
+
+		return e.complexity.ParticipantsResponse.TotalPage(childComplexity), true
 
 	case "Query.getComment":
 		if e.complexity.Query.GetComment == nil {
@@ -705,13 +743,22 @@ type Event {
   imageUrl: String
 }
 
+type CommentsResponse {
+  comment: [Comment!]
+  totalPage: Int!
+}
+
+type ParticipantsResponse {
+  participants: [User!]
+  totalPage: Int!
+}
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
   getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
-  getParticipants(eventId: Int!, page: Int, limit: Int): [User!]
-  getComments(eventId: Int!, page: Int, limit: Int): [Comment!]
+  getParticipants(eventId: Int!, page: Int, limit: Int): ParticipantsResponse!
+  getComments(eventId: Int!, page: Int, limit: Int): CommentsResponse!
   getComment(commentId: Int!): Comment!
   getEvents(page: Int, limit: Int): [Event!]
   getEvent(eventId: Int!): Event!
@@ -1440,6 +1487,73 @@ func (ec *executionContext) _Comment_updatedAt(ctx context.Context, field graphq
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CommentsResponse_comment(ctx context.Context, field graphql.CollectedField, obj *model.CommentsResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CommentsResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Comment)
+	fc.Result = res
+	return ec.marshalOComment2ᚕᚖsircloᚋentitiesᚋmodelᚐCommentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CommentsResponse_totalPage(ctx context.Context, field graphql.CollectedField, obj *model.CommentsResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CommentsResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -2346,6 +2460,73 @@ func (ec *executionContext) _Mutation_deleteEvent(ctx context.Context, field gra
 	return ec.marshalNSuccessResponse2ᚖsircloᚋentitiesᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _ParticipantsResponse_participants(ctx context.Context, field graphql.CollectedField, obj *model.ParticipantsResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ParticipantsResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Participants, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖsircloᚋentitiesᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ParticipantsResponse_totalPage(ctx context.Context, field graphql.CollectedField, obj *model.ParticipantsResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ParticipantsResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2536,11 +2717,14 @@ func (ec *executionContext) _Query_getParticipants(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.User)
+	res := resTmp.(*model.ParticipantsResponse)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖsircloᚋentitiesᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNParticipantsResponse2ᚖsircloᚋentitiesᚋmodelᚐParticipantsResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getComments(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2575,11 +2759,14 @@ func (ec *executionContext) _Query_getComments(ctx context.Context, field graphq
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Comment)
+	res := resTmp.(*model.CommentsResponse)
 	fc.Result = res
-	return ec.marshalOComment2ᚕᚖsircloᚋentitiesᚋmodelᚐCommentᚄ(ctx, field.Selections, res)
+	return ec.marshalNCommentsResponse2ᚖsircloᚋentitiesᚋmodelᚐCommentsResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getComment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4591,6 +4778,44 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var commentsResponseImplementors = []string{"CommentsResponse"}
+
+func (ec *executionContext) _CommentsResponse(ctx context.Context, sel ast.SelectionSet, obj *model.CommentsResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commentsResponseImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CommentsResponse")
+		case "comment":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CommentsResponse_comment(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "totalPage":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CommentsResponse_totalPage(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *model.Event) graphql.Marshaler {
@@ -4897,6 +5122,44 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var participantsResponseImplementors = []string{"ParticipantsResponse"}
+
+func (ec *executionContext) _ParticipantsResponse(ctx context.Context, sel ast.SelectionSet, obj *model.ParticipantsResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, participantsResponseImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ParticipantsResponse")
+		case "participants":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._ParticipantsResponse_participants(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "totalPage":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._ParticipantsResponse_totalPage(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -5015,6 +5278,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getParticipants(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -5035,6 +5301,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getComments(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -5760,6 +6029,20 @@ func (ec *executionContext) marshalNComment2ᚖsircloᚋentitiesᚋmodelᚐComme
 	return ec._Comment(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNCommentsResponse2sircloᚋentitiesᚋmodelᚐCommentsResponse(ctx context.Context, sel ast.SelectionSet, v model.CommentsResponse) graphql.Marshaler {
+	return ec._CommentsResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCommentsResponse2ᚖsircloᚋentitiesᚋmodelᚐCommentsResponse(ctx context.Context, sel ast.SelectionSet, v *model.CommentsResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CommentsResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNEditEvent2sircloᚋentitiesᚋmodelᚐEditEvent(ctx context.Context, v interface{}) (model.EditEvent, error) {
 	res, err := ec.unmarshalInputEditEvent(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5821,6 +6104,20 @@ func (ec *executionContext) unmarshalNNewEvent2sircloᚋentitiesᚋmodelᚐNewEv
 func (ec *executionContext) unmarshalNNewUser2sircloᚋentitiesᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
 	res, err := ec.unmarshalInputNewUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNParticipantsResponse2sircloᚋentitiesᚋmodelᚐParticipantsResponse(ctx context.Context, sel ast.SelectionSet, v model.ParticipantsResponse) graphql.Marshaler {
+	return ec._ParticipantsResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNParticipantsResponse2ᚖsircloᚋentitiesᚋmodelᚐParticipantsResponse(ctx context.Context, sel ast.SelectionSet, v *model.ParticipantsResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ParticipantsResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

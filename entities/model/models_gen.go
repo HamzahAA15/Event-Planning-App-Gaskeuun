@@ -9,6 +9,11 @@ type Comment struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
+type CommentsResponse struct {
+	Comment   []*Comment `json:"comment"`
+	TotalPage int        `json:"totalPage"`
+}
+
 type EditEvent struct {
 	CategoryID  *int    `json:"categoryId"`
 	Title       *string `json:"title"`
@@ -60,6 +65,11 @@ type NewUser struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type ParticipantsResponse struct {
+	Participants []*User `json:"participants"`
+	TotalPage    int     `json:"totalPage"`
 }
 
 type SuccessResponse struct {

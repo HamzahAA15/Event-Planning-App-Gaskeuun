@@ -41,13 +41,23 @@ type Event {
   imageUrl: String
 }
 
+type CommentsResponse {
+  comments: [Comment!]
+  totalPage: Int!
+}
+
+type ParticipantsResponse {
+  participants: [User!]
+  totalPage: Int!
+}
+
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
   getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
-  getParticipants(eventId: Int!, page: Int, limit: Int): [User!]
-  getComments(eventId: Int!, page: Int, limit: Int): [Comment!]
+  getParticipants(eventId: Int!, page: Int, limit: Int): ParticipantsResponse!
+  getComments(eventId: Int!, page: Int, limit: Int): CommentsResponse!
   getComment(commentId: Int!): Comment!
   getEvents(page: Int, limit: Int): [Event!]
   getEvent(eventId: Int!): Event!

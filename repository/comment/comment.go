@@ -14,12 +14,12 @@ func New(db *sql.DB) *CommentRepository {
 	return &CommentRepository{db: db}
 }
 
-func (cr *CommentRepository) GetComments(eventId int) ([]entities.CommentResponse, error) {
+func (cr *CommentRepository) GetComments(eventId int, limit int, offset int) ([]entities.CommentResponse, error) {
 	var comments []entities.CommentResponse
 	result, err := cr.db.Query(`
 	select comments.id, users.id, users.name, users.email, users.image_url, comments.comment, comments.updated_at from users
 	JOIN comments ON users.Id = comments.user_id
-	where comments.deleted_at is null AND users.deleted_at is null AND comments.event_id = ?`, eventId)
+	where comments.deleted_at is null AND users.deleted_at is null AND comments.event_id = ? LIMIT ? OFFSET ?`, eventId, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -89,4 +89,17 @@ func (cr *CommentRepository) DeleteComment(eventId int, commentId int, loginId i
 		return fmt.Errorf("comment not found")
 	}
 	return nil
+}
+
+func (cr *CommentRepository) GetTotalPageComments(eventId int) int {
+	var hasil int
+	result_check, _ := cr.db.Query("select COUNT(id) from comments where event_id = ? AND deleted_at IS null", eventId)
+	for result_check.Next() {
+		err := result_check.Scan(&hasil) // sql null string kalau mau skip
+		if err != nil {
+			return 1
+		}
+		return hasil
+	}
+	return 1
 }

@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sirclo/entities"
 	"sirclo/entities/model"
 	"sirclo/util/graph/generated"
@@ -345,13 +346,21 @@ func (r *queryResolver) GetUser(ctx context.Context, userID int) (*model.User, e
 	return &userResponseData, nil
 }
 
-func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *int, limit *int) ([]*model.User, error) {
+func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *int, limit *int) (*model.ParticipantsResponse, error) {
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
 	}
-
-	responseData, err := r.participantRepo.GetParticipants(eventID)
+	if page == nil {
+		a := 1
+		page = &a
+	}
+	if limit == nil {
+		b := 5
+		limit = &b
+	}
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.participantRepo.GetParticipants(eventID, *limit, offset)
 
 	if err != nil {
 		return nil, errors.New("not found")
@@ -363,12 +372,23 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *
 		theId := v.Id
 		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
-
-	return userResponseData, nil
+	var hasil model.ParticipantsResponse
+	hasil.Participants = userResponseData
+	hasil.TotalPage = int(math.Ceil(float64(r.participantRepo.GetTotalPageParticipants(eventID)) / float64(*limit)))
+	return &hasil, nil
 }
 
-func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int, limit *int) ([]*model.Comment, error) {
-	responseData, err := r.commentRepo.GetComments(eventID)
+func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int, limit *int) (*model.CommentsResponse, error) {
+	if page == nil {
+		a := 1
+		page = &a
+	}
+	if limit == nil {
+		b := 5
+		limit = &b
+	}
+	offset := ((*page - 1) * *limit)
+	responseData, err := r.commentRepo.GetComments(eventID, *limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +404,10 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 
 		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
 	}
-	return commentResponseData, nil
+	var hasil model.CommentsResponse
+	hasil.Comment = commentResponseData
+	hasil.TotalPage = int(math.Ceil(float64(r.commentRepo.GetTotalPageComments(eventID)) / float64(*limit)))
+	return &hasil, nil
 }
 
 func (r *queryResolver) GetComment(ctx context.Context, commentID int) (*model.Comment, error) {

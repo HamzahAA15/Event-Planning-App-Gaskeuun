@@ -404,6 +404,7 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 		user.ID = &id
 		user.Name = v.User.Name
 		user.Email = v.User.Email
+		user.ImageURL = &v.User.ImageUrl
 
 		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
 	}

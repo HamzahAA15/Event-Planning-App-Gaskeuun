@@ -372,6 +372,9 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *
 		theId := v.Id
 		userResponseData = append(userResponseData, &model.User{ID: &theId, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
 	}
+	if len(userResponseData) == 0 {
+		return nil, errors.New("commentnya ga ada di event id ini")
+	}
 	var hasil model.ParticipantsResponse
 	hasil.Participants = userResponseData
 	hasil.TotalPage = int(math.Ceil(float64(r.participantRepo.GetTotalPageParticipants(eventID)) / float64(*limit)))
@@ -403,6 +406,9 @@ func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int,
 		user.Email = v.User.Email
 
 		commentResponseData = append(commentResponseData, &model.Comment{ID: v.Id, User: &user, Comment: v.Comment, UpdatedAt: v.UpdatedAt})
+	}
+	if len(commentResponseData) == 0 {
+		return nil, errors.New("commentnya ga ada di event id ini")
 	}
 	var hasil model.CommentsResponse
 	hasil.Comment = commentResponseData

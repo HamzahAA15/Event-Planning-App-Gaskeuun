@@ -476,7 +476,21 @@ func (r *queryResolver) GetMyEvent(ctx context.Context) ([]*model.Event, error) 
 }
 
 func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginId := dataLogin.(int)
+	eventResponseData := []*model.Event{}
+	responseData, err := r.eventRepo.GetEventJoinedByUser(loginId)
+	if err != nil {
+		return nil, err
+	}
+	for _, val := range responseData {
+		id := val.Id
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+	}
+	return eventResponseData, nil
 }
 
 func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, page *int, limit *int) ([]*model.Event, error) {

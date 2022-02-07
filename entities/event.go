@@ -21,3 +21,9 @@ type EventCat struct {
 	Event
 	Categories Categories
 }
+
+type JoinedEvent struct {
+	Event
+	EventId int
+	UserId  int
+}

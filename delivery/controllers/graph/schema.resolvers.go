@@ -430,6 +430,7 @@ func (r *queryResolver) GetComment(ctx context.Context, commentID int) (*model.C
 	user.ID = &responseData.User.Id
 	user.Name = responseData.User.Name
 	user.Email = responseData.User.Email
+	user.ImageURL = responseData.User.ImageUrl
 	commentResponseData.User = &user
 
 	return &commentResponseData, nil
@@ -448,22 +449,51 @@ func (r *queryResolver) GetEvents(ctx context.Context, page *int, limit *int) ([
 	return eventResponseData, nil
 }
 
-func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event, error) {
-	responseData, err := r.eventRepo.GetEvent(eventID)
+func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.EventIDResponse, error) {
+	responseDataEvent, err := r.eventRepo.GetEvent(eventID)
 	if err != nil {
 		return nil, err
 	}
-	modelData := model.Event{
-		ID:          &responseData.Id,
-		UserID:      responseData.UserID,
-		CategoryID:  responseData.CategoryId,
-		Title:       responseData.Title,
-		Host:        responseData.Host,
-		Date:        responseData.Date,
-		Location:    responseData.Location,
-		Description: responseData.Description,
-		ImageURL:    &responseData.ImageUrl,
+	responseDataParticipants, errPar := r.participantRepo.GetParticipants(eventID, 5, 0)
+	if errPar != nil {
+		return nil, err
 	}
+	responseDataComments, errCom := r.commentRepo.GetComments(eventID, 5, 0)
+	if errCom != nil {
+		return nil, err
+	}
+
+	modelData := model.EventIDResponse{
+		ID:          &responseDataEvent.Id,
+		UserID:      responseDataEvent.UserID,
+		CategoryID:  responseDataEvent.CategoryId,
+		Title:       responseDataEvent.Title,
+		Host:        responseDataEvent.Host,
+		Date:        responseDataEvent.Date,
+		Location:    responseDataEvent.Location,
+		Description: responseDataEvent.Description,
+		ImageURL:    &responseDataEvent.ImageUrl,
+	}
+	Participants := []*model.User{}
+	Comments := []*model.Comment{}
+
+	for _, val := range responseDataComments {
+		var user model.User
+		id := val.User.Id
+		user.ID = &id
+		user.Name = val.User.Name
+		user.Email = val.User.Email
+
+		Comments = append(Comments, &model.Comment{ID: val.Id, User: &user, Comment: val.Comment, UpdatedAt: val.UpdatedAt})
+	}
+	for _, v := range responseDataParticipants {
+		id := v.Id
+		Participants = append(Participants, &model.User{ID: &id, Name: v.Name, Email: v.Email, ImageURL: &v.ImageUrl})
+	}
+
+	modelData.Participants = Participants
+	modelData.Comments = Comments
+
 	return &modelData, nil
 }
 
@@ -486,7 +516,7 @@ func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *
 	return eventResponseData, nil
 }
 
-func (r *queryResolver) GetMyEvent(ctx context.Context) ([]*model.Event, error) {
+func (r *queryResolver) GetMyEvent(ctx context.Context, page *int, limit *int) ([]*model.Event, error) {
 	dataLogin := ctx.Value("EchoContextKey")
 	if dataLogin == nil {
 		return nil, errors.New("unauthorized")
@@ -522,9 +552,13 @@ func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, lim
 	return eventResponseData, nil
 }
 
-func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, page *int, limit *int) ([]*model.Event, error) {
+func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, param *string, page *int, limit *int) ([]*model.Event, error) {
+	strParam := " "
+	if param == nil {
+		param = &strParam
+	}
 	eventResponseData := []*model.Event{}
-	responseData, err := r.eventRepo.GetMyEvents(categoryID)
+	responseData, err := r.eventRepo.GetEventByCatID(categoryID, *param)
 	if err != nil {
 		return nil, err
 	}

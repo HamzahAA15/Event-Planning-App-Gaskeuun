@@ -12,6 +12,12 @@ type Event struct {
 	ImageUrl    string `json:"imageurl" form:"imageurl"`
 }
 
+type EventIdResponse struct {
+	Event
+	Participants User
+	Comments     Comment
+}
+
 type Categories struct {
 	Id       int    `json:"id" form:"id"`
 	Category string `json:"category" form:"category"`

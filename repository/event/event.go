@@ -34,8 +34,8 @@ func (er *EventRepository) GetEvents() ([]entities.Event, error) {
 	return events, nil
 }
 
-func (er *EventRepository) GetEvent(eventID int) (entities.Event, error) {
-	var event entities.Event
+func (er *EventRepository) GetEvent(eventID int) (entities.EventIdResponse, error) {
+	var event entities.EventIdResponse
 	result := er.db.QueryRow(`SELECT id, user_id, category_id, title, host, date, location, description, image_url FROM events WHERE id = ? AND deleted_at IS NULL`, eventID)
 
 	err := result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl)
@@ -86,9 +86,10 @@ func (er *EventRepository) GetMyEvents(loginId int) ([]entities.Event, error) {
 	return events, nil
 }
 
-func (er *EventRepository) GetEventByCatID(categoryID int) ([]entities.Event, error) {
+func (er *EventRepository) GetEventByCatID(categoryID int, param string) ([]entities.Event, error) {
+	convParam := "%" + param + "%"
 	var events []entities.Event
-	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE AND category_id = ? AND deleted_at IS NULL`, categoryID)
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE AND category_id = ? AND title  LIKE ? OR location LIKE ? AND deleted_at IS NULL`, categoryID, convParam, convParam)
 	if err != nil {
 		return nil, err
 	}

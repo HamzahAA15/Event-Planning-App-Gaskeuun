@@ -162,6 +162,7 @@ func (r *mutationResolver) EditUser(ctx context.Context, edit model.EditUser) (*
 	user.Name = *edit.Name
 	user.Email = *edit.Email
 	user.Password, _ = entities.EncryptPassword(*edit.Password)
+	user.ImageUrl = *edit.ImageURL
 
 	err := r.userRepo.EditUser(user, userID)
 	if err != nil {

@@ -20,7 +20,7 @@ func (er *EventRepository) GetEvents(limit, offset int) ([]entities.Event, error
 	if err != nil {
 		return nil, err
 	}
-
+	defer result.Close()
 	for result.Next() {
 		var event entities.Event
 
@@ -53,7 +53,7 @@ func (er *EventRepository) GetEventParam(param string, limit, offset int) ([]ent
 	if err != nil {
 		return nil, err
 	}
-
+	defer result.Close()
 	for result.Next() {
 		var event entities.EventCat
 		err = result.Scan(&event.Id, &event.UserID, &event.CategoryId, &event.Title, &event.Host, &event.Date, &event.Location, &event.Description, &event.ImageUrl, &event.Categories.Id, &event.Categories.Category)
@@ -72,7 +72,7 @@ func (er *EventRepository) GetMyEvents(loginId int, limit, offset int) ([]entiti
 	if err != nil {
 		return nil, err
 	}
-
+	defer result.Close()
 	for result.Next() {
 		var event entities.Event
 
@@ -93,7 +93,7 @@ func (er *EventRepository) GetEventByCatID(categoryID int, param string, limit, 
 	if err != nil {
 		return nil, err
 	}
-
+	defer result.Close()
 	for result.Next() {
 		var event entities.Event
 
@@ -113,7 +113,7 @@ func (er *EventRepository) GetEventJoinedByUser(loginId int, limit, offset int) 
 	if err != nil {
 		return nil, err
 	}
-
+	defer result.Close()
 	for result.Next() {
 		var event entities.JoinedEvent
 
@@ -134,7 +134,7 @@ func (er *EventRepository) CreateEvent(event entities.Event) (entities.Event, er
 	if err != nil {
 		return event, err
 	}
-
+	defer statement.Close()
 	_, err = statement.Exec(event.UserID, event.CategoryId, event.Title, event.Host, event.Date, event.Location, event.Description, event.ImageUrl)
 	if err != nil {
 		return event, err
@@ -149,7 +149,7 @@ func (er *EventRepository) UpdateEvent(event entities.Event, eventID, loginId in
 	if err != nil {
 		return err
 	}
-
+	defer statement.Close()
 	result, err_ex := statement.Exec(event.CategoryId, event.Title, event.Host, event.Date, event.Location, event.Description, event.ImageUrl, eventID, loginId)
 	if err_ex != nil {
 		return err_ex
@@ -168,6 +168,7 @@ func (er *EventRepository) DeleteEvent(eventId int, loginId int) error {
 	if err != nil {
 		return err
 	}
+	defer statement.Close()
 	fmt.Println("ini ei & li: ", eventId, loginId)
 	result, err_exec := statement.Exec(eventId, loginId)
 	if err_exec != nil {
@@ -186,6 +187,7 @@ func (er *EventRepository) GetTotalEvents(param string) int {
 	var hasil int
 	convParam := "%" + param + "%"
 	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE title LIKE ? OR location LIKE ? AND deleted_at IS null", convParam, convParam)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {
@@ -199,6 +201,7 @@ func (er *EventRepository) GetTotalEvents(param string) int {
 func (er *EventRepository) GetTotalMyEvents(loginId int) int {
 	var hasil int
 	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE user_id = ?  AND deleted_at IS null", loginId)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {
@@ -212,6 +215,7 @@ func (er *EventRepository) GetTotalMyEvents(loginId int) int {
 func (er *EventRepository) GetTotalJoinedEvents(loginId int) int {
 	var hasil int
 	result_check, _ := er.db.Query("SELECT COUNT(e.id) FROM events e JOIN participants p ON e.id = p.event_id WHERE p.user_id = ? AND p.deleted_at IS null", loginId)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {
@@ -226,6 +230,7 @@ func (er *EventRepository) GetTotalEventsByCatId(categoryID int, param string) i
 	var hasil int
 	convParam := "%" + param + "%"
 	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE category_id = ? AND title LIKE ? OR location LIKE ? AND deleted_at IS null", categoryID, convParam, convParam)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {

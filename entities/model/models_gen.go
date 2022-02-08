@@ -32,15 +32,15 @@ type EditUser struct {
 }
 
 type Event struct {
-	ID          *int    `json:"id"`
-	UserID      int     `json:"userId"`
-	CategoryID  int     `json:"categoryId"`
-	Title       string  `json:"title"`
-	Host        string  `json:"host"`
-	Date        string  `json:"date"`
-	Location    string  `json:"location"`
-	Description string  `json:"description"`
-	ImageURL    *string `json:"imageUrl"`
+	ID          *int   `json:"id"`
+	UserID      int    `json:"userId"`
+	CategoryID  int    `json:"categoryId"`
+	Title       string `json:"title"`
+	Host        string `json:"host"`
+	Date        string `json:"date"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+	ImageURL    string `json:"imageUrl"`
 }
 
 type EventIDResponse struct {
@@ -52,7 +52,7 @@ type EventIDResponse struct {
 	Date         string     `json:"date"`
 	Location     string     `json:"location"`
 	Description  string     `json:"description"`
-	ImageURL     *string    `json:"imageUrl"`
+	ImageURL     string     `json:"imageUrl"`
 	Participants []*User    `json:"participants"`
 	Comments     []*Comment `json:"Comments"`
 }

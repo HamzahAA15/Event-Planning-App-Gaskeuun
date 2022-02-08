@@ -880,7 +880,7 @@ type Event {
   date: String!
   location: String!
   description: String!
-  imageUrl: String
+  imageUrl: String!
 }
 
 type EventIdResponse {
@@ -892,7 +892,7 @@ type EventIdResponse {
   date: String!
   location: String!
   description: String!
-  imageUrl: String
+  imageUrl: String!
   participants: [User!]
   Comments: [Comment!]
 }
@@ -2076,11 +2076,14 @@ func (ec *executionContext) _Event_imageUrl(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EventIdResponse_id(ctx context.Context, field graphql.CollectedField, obj *model.EventIDResponse) (ret graphql.Marshaler) {
@@ -2385,11 +2388,14 @@ func (ec *executionContext) _EventIdResponse_imageUrl(ctx context.Context, field
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EventIdResponse_participants(ctx context.Context, field graphql.CollectedField, obj *model.EventIDResponse) (ret graphql.Marshaler) {
@@ -5667,6 +5673,9 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Values[i] = innerFunc(ctx)
 
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5772,6 +5781,9 @@ func (ec *executionContext) _EventIdResponse(ctx context.Context, sel ast.Select
 
 			out.Values[i] = innerFunc(ctx)
 
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "participants":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._EventIdResponse_participants(ctx, field, obj)

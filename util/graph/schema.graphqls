@@ -38,7 +38,7 @@ type Event {
   date: String!
   location: String!
   description: String!
-  imageUrl: String
+  imageUrl: String!
 }
 
 type EventIdResponse {
@@ -50,7 +50,7 @@ type EventIdResponse {
   date: String!
   location: String!
   description: String!
-  imageUrl: String
+  imageUrl: String!
   participants: [User!]
   Comments: [Comment!]
 }

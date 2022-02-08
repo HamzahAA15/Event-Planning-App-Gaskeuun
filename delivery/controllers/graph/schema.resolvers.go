@@ -458,7 +458,7 @@ func (r *queryResolver) GetEvents(ctx context.Context, page *int, limit *int) (*
 	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
-		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: val.ImageUrl})
 	}
 	var result model.EventResponse
 	result.Event = eventResponseData
@@ -490,7 +490,7 @@ func (r *queryResolver) GetEvent(ctx context.Context, eventID int) (*model.Event
 		Date:        responseDataEvent.Date,
 		Location:    responseDataEvent.Location,
 		Description: responseDataEvent.Description,
-		ImageURL:    &responseDataEvent.ImageUrl,
+		ImageURL:    responseDataEvent.ImageUrl,
 	}
 	Participants := []*model.User{}
 	Comments := []*model.Comment{}
@@ -537,7 +537,7 @@ func (r *queryResolver) GetEventParam(ctx context.Context, param *string, page *
 
 	for _, val := range responseData {
 		id := val.Id
-		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: val.ImageUrl})
 	}
 	var result model.EventResponse
 	result.Event = eventResponseData
@@ -568,7 +568,7 @@ func (r *queryResolver) GetMyEvent(ctx context.Context, page *int, limit *int) (
 	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
-		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: val.ImageUrl})
 	}
 	var result model.EventResponse
 	result.Event = eventResponseData
@@ -600,7 +600,7 @@ func (r *queryResolver) GetEventJoinedByUser(ctx context.Context, page *int, lim
 
 	for _, val := range responseData {
 		id := val.Id
-		eventResponseData = append(eventResponseData, &model.Event{ID: &id, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: val.ImageUrl})
 	}
 	var result model.EventResponse
 	result.Event = eventResponseData
@@ -631,7 +631,7 @@ func (r *queryResolver) GetEventByCatID(ctx context.Context, categoryID int, par
 	eventResponseData := []*model.Event{}
 	for _, val := range responseData {
 		id := val.Id
-		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: &val.ImageUrl})
+		eventResponseData = append(eventResponseData, &model.Event{ID: &id, UserID: val.UserID, CategoryID: val.CategoryId, Title: val.Title, Host: val.Host, Date: val.Date, Location: val.Location, Description: val.Description, ImageURL: val.ImageUrl})
 	}
 	var result model.EventResponse
 	result.Event = eventResponseData

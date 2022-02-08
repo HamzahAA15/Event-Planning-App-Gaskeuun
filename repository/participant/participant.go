@@ -37,6 +37,7 @@ func (pr *ParticipantRepository) GetParticipants(eventId int, limit int, offset 
 
 func (pr *ParticipantRepository) CreateParticipant(eventId int, loginId int) error {
 	result_check, _ := pr.db.Query("select id from participants where event_id = ? AND user_id = ? AND deleted_at IS null", eventId, loginId)
+	defer result_check.Close()
 	for result_check.Next() {
 		return fmt.Errorf("anda sudah terdaftar")
 	}
@@ -66,6 +67,7 @@ func (pr *ParticipantRepository) DeleteParticipant(eventId int, loginId int) err
 func (pr *ParticipantRepository) GetTotalPageParticipants(eventId int) int {
 	var hasil int
 	result_check, _ := pr.db.Query("select COUNT(id) from participants where event_id = ? AND deleted_at IS null", eventId)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {

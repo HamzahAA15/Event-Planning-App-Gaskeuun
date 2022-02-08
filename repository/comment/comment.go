@@ -94,6 +94,7 @@ func (cr *CommentRepository) DeleteComment(eventId int, commentId int, loginId i
 func (cr *CommentRepository) GetTotalPageComments(eventId int) int {
 	var hasil int
 	result_check, _ := cr.db.Query("select COUNT(id) from comments where event_id = ? AND deleted_at IS null", eventId)
+	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
 		if err != nil {

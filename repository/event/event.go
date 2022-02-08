@@ -109,7 +109,7 @@ func (er *EventRepository) GetEventByCatID(categoryID int, param string, limit, 
 
 func (er *EventRepository) GetEventJoinedByUser(loginId int, limit, offset int) ([]entities.JoinedEvent, error) {
 	var events []entities.JoinedEvent
-	result, err := er.db.Query(`select e.id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, p.event_id, p.user_id as participant from events e JOIN participants p ON e.id = p.event_id WHERE p.user_id = ? AND p.deleted_at IS NULL LIMIT ? OFFSET ?`, loginId, limit, offset)
+	result, err := er.db.Query(`select e.id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, p.event_id, p.user_id as participant from events e JOIN participants p ON e.id = p.event_id WHERE p.user_id = ? AND e.deleted_at IS NULL AND p.deleted_at IS NULL LIMIT ? OFFSET ?`, loginId, limit, offset)
 	if err != nil {
 		return nil, err
 	}

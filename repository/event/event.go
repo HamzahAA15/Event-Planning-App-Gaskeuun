@@ -49,7 +49,7 @@ func (er *EventRepository) GetEvent(eventID int) (entities.EventIdResponse, erro
 func (er *EventRepository) GetEventParam(param string, limit, offset int) ([]entities.EventCat, error) {
 	var events []entities.EventCat
 	convParam := "%" + param + "%"
-	result, err := er.db.Query(`SELECT e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, c.id as category_id, c.category FROM events e JOIN categories c ON e.category_id = c.id WHERE e.title LIKE ? OR e.location LIKE ? OR c.category LIKE ? AND e.deleted_at IS NULL LIMIT ? OFFSET ?`, convParam, convParam, convParam, limit, offset)
+	result, err := er.db.Query(`SELECT e.id, e.user_id, e.category_id, e.title, e.host, e.date, e.location, e.description, e.image_url, c.id as category_id, c.category FROM events e JOIN categories c ON e.category_id = c.id WHERE e.deleted_at IS NULL AND (e.title LIKE ? OR e.location LIKE ? OR c.category LIKE ?) LIMIT ? OFFSET ?`, convParam, convParam, convParam, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (er *EventRepository) GetMyEvents(loginId int, limit, offset int) ([]entiti
 func (er *EventRepository) GetEventByCatID(categoryID int, param string, limit, offset int) ([]entities.Event, error) {
 	convParam := "%" + param + "%"
 	var events []entities.Event
-	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE category_id = ? AND deleted_at IS NULL AND title LIKE ? OR location LIKE ? LIMIT ? OFFSET ?`, categoryID, convParam, convParam, limit, offset)
+	result, err := er.db.Query(`select id, user_id, category_id, title, host, date, location, description, image_url from events WHERE category_id = ? AND deleted_at IS NULL AND (title LIKE ? OR location LIKE ?) LIMIT ? OFFSET ?`, categoryID, convParam, convParam, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (er *EventRepository) DeleteEvent(eventId int, loginId int) error {
 func (er *EventRepository) GetTotalEvents(param string) int {
 	var hasil int
 	convParam := "%" + param + "%"
-	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE title LIKE ? OR location LIKE ? AND deleted_at IS null", convParam, convParam)
+	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE deleted_at IS null AND (title LIKE ? OR location LIKE ?)", convParam, convParam)
 	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
@@ -200,7 +200,7 @@ func (er *EventRepository) GetTotalEvents(param string) int {
 
 func (er *EventRepository) GetTotalMyEvents(loginId int) int {
 	var hasil int
-	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE user_id = ?  AND deleted_at IS null", loginId)
+	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE user_id = ? AND deleted_at IS null", loginId)
 	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip
@@ -229,7 +229,7 @@ func (er *EventRepository) GetTotalJoinedEvents(loginId int) int {
 func (er *EventRepository) GetTotalEventsByCatId(categoryID int, param string) int {
 	var hasil int
 	convParam := "%" + param + "%"
-	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE category_id = ? AND title LIKE ? OR location LIKE ? AND deleted_at IS null", categoryID, convParam, convParam)
+	result_check, _ := er.db.Query("SELECT COUNT(id) FROM events WHERE category_id = ? AND deleted_at IS null AND (title LIKE ? OR location LIKE ?)", categoryID, convParam, convParam)
 	defer result_check.Close()
 	for result_check.Next() {
 		err := result_check.Scan(&hasil) // sql null string kalau mau skip

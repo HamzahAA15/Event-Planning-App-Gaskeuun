@@ -86,6 +86,10 @@ type NewUser struct {
 	Password string `json:"password"`
 }
 
+type ParticipantStatus struct {
+	Status bool `json:"status"`
+}
+
 type ParticipantsResponse struct {
 	Participants []*User `json:"participants"`
 	TotalPage    int     `json:"totalPage"`

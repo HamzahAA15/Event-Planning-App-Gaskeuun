@@ -70,12 +70,17 @@ type ParticipantsResponse {
   totalPage: Int!
 }
 
+type ParticipantStatus {
+  status: Boolean!
+}
+
 type Query {
   login(email: String!, password: String!): LoginResponse!
   getProfile: User!
   getUsers(page: Int, limit: Int): [User!]
   getUser(userId: Int!): User!
   getParticipants(eventId: Int!, page: Int, limit: Int): ParticipantsResponse!
+  getParticipantStatus(eventId: Int!): ParticipantStatus!
   getComments(eventId: Int!, page: Int, limit: Int): CommentsResponse!
   getComment(commentId: Int!): Comment!
   getEvents(page: Int, limit: Int): EventResponse!

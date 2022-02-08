@@ -373,6 +373,17 @@ func (r *queryResolver) GetParticipants(ctx context.Context, eventID int, page *
 	return &hasil, nil
 }
 
+func (r *queryResolver) GetParticipantStatus(ctx context.Context, eventID int) (*model.ParticipantStatus, error) {
+	dataLogin := ctx.Value("EchoContextKey")
+	if dataLogin == nil {
+		return nil, errors.New("unauthorized")
+	}
+	loginId := dataLogin.(int)
+	var hasil model.ParticipantStatus
+	hasil.Status = r.participantRepo.GetParticipantStatus(eventID, loginId)
+	return &hasil, nil
+}
+
 func (r *queryResolver) GetComments(ctx context.Context, eventID int, page *int, limit *int) (*model.CommentsResponse, error) {
 	if page == nil {
 		a := 1

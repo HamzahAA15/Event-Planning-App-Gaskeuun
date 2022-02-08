@@ -77,3 +77,13 @@ func (pr *ParticipantRepository) GetTotalPageParticipants(eventId int) int {
 	}
 	return 1
 }
+
+func (pr *ParticipantRepository) GetParticipantStatus(eventId int, loginId int) bool {
+	var id int
+	result := pr.db.QueryRow(`SELECT id FROM participants WHERE event_id = ? AND user_id = ? AND deleted_at IS NULL`, eventId, loginId)
+	err := result.Scan(&id)
+	if err != nil {
+		return false
+	}
+	return true
+}

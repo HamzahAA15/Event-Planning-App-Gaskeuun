@@ -25,7 +25,6 @@ func RegisterPath(e *echo.Echo, srv *handler.Server) {
 	// 	srv.ServeHTTP(c.Response(), c.Request())
 	// 	return nil
 	// })
-
 	e.GET("/playground", func(c echo.Context) error {
 		playground.Handler("GraphQL", "/query").ServeHTTP(c.Response(), c.Request())
 		return nil
